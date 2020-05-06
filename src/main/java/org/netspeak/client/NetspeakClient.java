@@ -12,7 +12,6 @@ import java.util.concurrent.Future;
 
 import org.netspeak.JsonUtil;
 import org.netspeak.generated.NetspeakMessages.Phrase;
-import org.netspeak.generated.NetspeakMessages.RawResponse;
 import org.netspeak.generated.NetspeakMessages.Response;
 
 /**
@@ -22,10 +21,6 @@ import org.netspeak.generated.NetspeakMessages.Response;
  * <li>Synchronously using {@link #search(Request)}</li>
  * <li>Asynchronously using {@link #searchAsync(Request)}</li>
  * </ul>
- * Furthermore both variants can request, so called, {@link RawResponse} objects
- * which provide intermediate data of the retrieval process. This data could be
- * interesting for evaluation tasks, but might not be useful to the normal user,
- * since it does not contain the final list of {@link Phrase}s.
  */
 public class NetspeakClient {
 
@@ -77,21 +72,15 @@ public class NetspeakClient {
 	 * Builds a URL parameter string from the key/value pairs given by
 	 * {@code request}. If the key {@link Request#QUERY} is present, its value will
 	 * be percentage-encoded in the returned string. All other values will be copied
-	 * without modification. The parameter {@code raw=true} could be appended
-	 * optionally.
+	 * without modification.
 	 *
 	 * @param request     The {@link Request} containing key/value pairs to encode.
-	 * @param asRawSearch {@code true} to append {@code raw=true}, {@code false} to
-	 *                    append nothing.
 	 * @return The URL-encoded parameter string.
 	 */
-	private static final String buildUrlParamString(Request request, boolean asRawSearch) {
+	private static final String buildUrlParamString(Request request) {
 		StringBuilder sb = new StringBuilder();
 
 		sb.append(Request.FORMAT).append('=').append("json");
-		if (asRawSearch) {
-			sb.append('&').append(Request.RAW).append('=').append("true");
-		}
 
 		for (Map.Entry<String, String> entry : request.entrySet()) {
 			String param = entry.getKey().trim().toLowerCase();
@@ -126,17 +115,14 @@ public class NetspeakClient {
 
 	/**
 	 * Builds a complete {@link URL} object, composed of the base URL and a list of
-	 * URL parameters, that forms a valid Netspeak request. The parameter
-	 * {@code raw=true} could be appended optionally.
+	 * URL parameters, that forms a valid Netspeak request.
 	 *
-	 * @param request     The {@link Request} containing key/value pairs to encode.
-	 * @param asRawSearch {@code true} to append {@code raw=true}, {@code false} to
-	 *                    append nothing.
+	 * @param request The {@link Request} containing key/value pairs to encode.
 	 * @return An {@link URL} object.
 	 * @throws MalformedURLException If the composed URL is not well-formatted.
 	 */
-	private URL buildUrl(Request request, boolean asRawSearch) throws MalformedURLException {
-		return new URL(getBaseUrl() + buildUrlParamString(request, asRawSearch));
+	private URL buildUrl(Request request) throws MalformedURLException {
+		return new URL(getBaseUrl() + buildUrlParamString(request));
 	}
 
 	/**
@@ -151,11 +137,9 @@ public class NetspeakClient {
 	 * @throws IOException           If some communication error occurred.
 	 *
 	 * @see #searchAsync(Request)
-	 * @see #searchRaw(Request)
-	 * @see #searchRawAsync(Request)
 	 */
 	public Response search(Request request) throws MalformedURLException, IOException {
-		return JsonUtil.parseResponse(buildUrl(request, false).openStream());
+		return JsonUtil.parseResponse(buildUrl(request).openStream());
 	}
 
 	/**
@@ -169,41 +153,6 @@ public class NetspeakClient {
 	 */
 	public Future<Response> searchAsync(Request request) {
 		return executor.submit(() -> this.search(request));
-	}
-
-	/**
-	 * Sends a {@link Request} to the Netspeak service identified by
-	 * {@link #getBaseUrl()} and returns a {@link RawResponse} that provides
-	 * intermediate data of the retrieval process. This object was designed for
-	 * evaluation purposes and might not be useful to the normal user, since it does
-	 * not contain the final list of {@link Phrase}s. This method blocks until the
-	 * response was received or some exception occurred.
-	 *
-	 * @param request The {@link Request} containing all request parameters.
-	 * @return The corresponding {@link RawResponse} containing intermediate
-	 *         retrieval data, but not the final list of {@link Phrase}s.
-	 * @throws MalformedURLException If the composed URL is not well-formatted.
-	 * @throws IOException           If some communication error occurred.
-	 *
-	 * @see #search(Request)
-	 * @see #searchAsync(Request)
-	 * @see #searchRawAsync(Request)
-	 */
-	public RawResponse searchRaw(Request request) throws MalformedURLException, IOException {
-		return JsonUtil.parseRawResponse(buildUrl(request, false).openStream());
-	}
-
-	/**
-	 * Analog to {@link #searchAsync(Request)}.
-	 *
-	 * @param request The {@link Request} containing all request parameters.
-	 *
-	 * @see #search(Request)
-	 * @see #searchAsync(Request)
-	 * @see #searchRaw(Request)
-	 */
-	public Future<RawResponse> searchRawAsync(Request request) {
-		return executor.submit(() -> this.searchRaw(request));
 	}
 
 	/**

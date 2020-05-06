@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 
 import org.junit.Test;
-import org.netspeak.generated.NetspeakMessages.RawResponse;
 import org.netspeak.generated.NetspeakMessages.Response;
 
 
@@ -36,80 +35,6 @@ public class TestNetspeakClient {
 			fail("Unexpected exception");
 		} catch (IOException e) {
 			fail("Unexpected exception");
-		}
-	}
-
-	@Test
-	public final void testSearchRaw() {
-		NetspeakClient netspeak = new NetspeakClient();
-		Request request = new Request();
-		request.put(Request.QUERY, "test ?");
-		try {
-			RawResponse response = netspeak.searchRaw(request);
-			assertTrue(response.getQueryResultCount() > 0);
-		} catch (MalformedURLException e) {
-			fail("Unexpected exception");
-		} catch (IOException e) {
-			fail("Unexpected exception");
-		}
-	}
-
-	@Test(expected = IOException.class)
-	public final void testSearchRawThrowingIOException() throws MalformedURLException, IOException {
-		NetspeakClient netspeak = new NetspeakClient("http://does-not-exist.xxx");
-		Request request = new Request();
-		request.put(Request.QUERY, "test ?");
-		netspeak.searchRaw(request);
-	}
-
-	@Test(expected = MalformedURLException.class)
-	public final void testSearchRawThrowingMalformedURLException() throws MalformedURLException, IOException {
-		NetspeakClient netspeak = new NetspeakClient("some/malformed/url");
-		Request request = new Request();
-		request.put(Request.QUERY, "test ?");
-		netspeak.searchRaw(request);
-	}
-
-	@Test
-	public final void testSearchRawWithSearchRawAsyncFailure() {
-		NetspeakClient netspeak = new NetspeakClient("http://does-not-exist.xxx");
-		Request request = new Request();
-
-		request.put(Request.QUERY, "one ?");
-		try {
-			netspeak.searchRawAsync(request).get();
-			fail("Unexpected event");
-		} catch (Exception e) {
-			// it's supposed to fail
-		}
-
-		request.put(Request.QUERY, "two ?");
-		try {
-			netspeak.searchRawAsync(request).get();
-			fail("Unexpected event");
-		} catch (Exception e) {
-			// it's supposed to fail
-		}
-
-		request.put(Request.QUERY, "three ?");
-		try {
-			netspeak.searchRawAsync(request).get();
-			fail("Unexpected event");
-		} catch (Exception e) {
-			// it's supposed to fail
-		}
-	}
-
-	@Test
-	public final void testSearchRawAsyncSuccess() {
-		NetspeakClient netspeak = new NetspeakClient();
-		Request request = new Request();
-		request.put(Request.QUERY, "one ?");
-
-		try {
-			netspeak.searchRawAsync(request).get();
-		} catch (Exception e) {
-			fail("Unexpected event");
 		}
 	}
 
