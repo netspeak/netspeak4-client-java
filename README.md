@@ -89,7 +89,7 @@ public class NetspeakUsage {
 ## Build
 
 ```bash
-gradle build
+./gradlew build
 ```
 
 The compiled JAR will be located at `build/libs/`
