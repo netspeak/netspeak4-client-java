@@ -1,5 +1,7 @@
 # Netspeak 4 client
 
+[![Actions Status](https://github.com/netspeak/netspeak4-client-java/workflows/Java%20CI%20with%20Gradle/badge.svg)](https://github.com/netspeak/netspeak4-client-java/actions)
+
 This is a client of the Netspeak 4 web API written in Java.
 
 
